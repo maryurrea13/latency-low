@@ -1,26 +1,26 @@
-# Ultra-Low Latency System
+# Low Latency System
 
-Un sistema de comunicación de ultra-baja latencia diseñado en C++ para Windows que logra tiempos de respuesta menores a 1 milisegundo.
+Un sistema de comunicación de latencia baja en C++ para Windows que logra tiempos de respuesta menores a 1 milisegundo.
 
 ## 🎯 Objetivo
 
-Este proyecto demuestra la capacidad de diseñar, implementar y optimizar una arquitectura de software enfocada en reducir drásticamente la latencia de comunicación. El sistema responde a estímulos (mensajes) con respuestas casi inmediatas, logrando latencias preferiblemente menores a un milisegundo.
+Diseñar, implementar y optimizar una arquitectura de software enfocada en reducir la latencia de comunicación. El sistema responde a estímulos (mensajes) con respuestas casi inmediatas, logrando latencias preferiblemente menores a un milisegundo.
 
 ## 🏗️ Arquitectura
 
 ### Componentes Principales
 
-1. **Servidor Ultra-Latency** (`UltraLatencyServer`)
-   - Utiliza **I/O Completion Ports (IOCP)** de Windows para máxima performance
-   - Arquitectura multi-thread optimizada para concurrencia
+1. **Servidor Simple** (`SimpleServer`)
+   - Implementación en `server.cpp` con arquitectura multi-thread
    - Configuración de sockets optimizada para baja latencia
-   - Medición de latencia de alta precisión
+   - Manejo de conexiones concurrentes
+   - Respuesta automática a requests
 
-2. **Cliente Ultra-Latency** (`UltraLatencyClient`)
-   - Cliente optimizado para testing y medición de latencia
-   - Soporte para conexiones concurrentes
-   - Múltiples modos de testing (batch, continuo, concurrente)
-   - Análisis estadístico detallado
+2. **Cliente Simple** (`SimpleClient`)
+   - Implementación en `client.cpp` para testing y medición
+   - Medición de latencia de alta precisión
+   - Múltiples modos de testing (batch, continuo)
+   - Análisis estadístico de performance
 
 3. **Sistema de Medición de Alta Precisión**
    - Timer de alta resolución usando `QueryPerformanceCounter`
@@ -29,11 +29,10 @@ Este proyecto demuestra la capacidad de diseñar, implementar y optimizar una ar
 
 ### Optimizaciones Implementadas
 
-- **TCP_NODELAY**: Elimina el algoritmo de Nagle para reducir latencia
-- **Buffer Sizes**: Buffers optimizados de 64KB para send/receive
-- **IOCP**: I/O Completion Ports para I/O asíncrono eficiente
 - **Multi-threading**: Threads optimizados para el número de cores disponibles
-- **Memory Management**: Gestión eficiente de memoria sin copias innecesarias
+- **High-Resolution Timer**: Medición de latencia en nanosegundos
+- **Socket Optimization**: Configuración optimizada de sockets
+- **Memory Management**: Gestión eficiente de memoria
 - **Compiler Optimizations**: Flags de optimización agresivos para máxima velocidad
 
 ## 📋 Requisitos
@@ -76,50 +75,116 @@ build/bin/Release/
 
 ## 🎮 Uso
 
-### 1. Ejecutar el Servidor
+### 🚀 Ejecución Manual del Sistema
+
+#### **Paso 1: Iniciar el Servidor**
+
+Abre una **primera ventana de PowerShell/CMD** y ejecuta:
 
 ```bash
-# Servidor básico
-./server.exe
+# Navegar al directorio del proyecto
+cd "C:\Users\Mary Urrea\Desktop\ultra-low-latency-system"
 
-# Servidor con configuración personalizada
-./server.exe --host 0.0.0.0 --port 8080
+# Ejecutar el servidor
+bin\server.exe
 ```
 
-El servidor mostrará estadísticas en tiempo real cada 5 segundos.
+El servidor debería mostrar:
+```
+Simple server started on port 8080
+Server running. Press Enter to stop...
+```
 
-### 2. Ejecutar Tests con el Cliente
+#### **Paso 2: Ejecutar el Cliente (en otra ventana)**
+
+Abre una **segunda ventana de PowerShell/CMD** y ejecuta:
 
 ```bash
-# Test básico (1000 requests)
-./client.exe
+# Navegar al directorio del proyecto
+cd "C:\Users\Mary Urrea\Desktop\ultra-low-latency-system"
+
+# Test básico (5 requests)
+bin\client.exe --requests 5
+
+# O test con más requests
+bin\client.exe --requests 100
+
+# O test personalizado
+bin\client.exe --request "hello" --expected "respuesta" --requests 3
+```
+
+### 🎯 Comandos Específicos del Cliente
+
+```bash
+# Test básico
+bin\client.exe --requests 5
+
+# Test con mensaje personalizado
+bin\client.exe --request "ping" --expected "pong" --requests 10
+
+# Test de latencia completo
+bin\client.exe --requests 1000
+
+# Test continuo por 10 segundos
+bin\client.exe --duration 10 --rate 1000
+
+# Test con múltiples conexiones
+bin\client.exe --requests 100 --concurrent 4
+```
+
+### 🧪 Usar el Test Automático
+
+Si prefieres usar el sistema automático que ya funciona:
+
+```bash
+# Ejecutar test completo (inicia servidor + cliente automáticamente)
+test.bat
+```
+
+### ⚠️ Posibles Problemas y Soluciones
+
+#### **Si el servidor no inicia:**
+- Verifica que el puerto 8080 esté libre
+- Ejecuta como administrador si es necesario
+
+#### **Si el cliente no se conecta:**
+- Asegúrate de que el servidor esté ejecutándose
+- Verifica que estén en la misma red (localhost)
+
+#### **Si hay errores de DLL:**
+- Los archivos DLL ya están en el directorio `bin/`
+- Ejecuta desde el directorio raíz del proyecto
+
+### 🎮 Ejemplo de Uso Completo
+
+```bash
+# Terminal 1 - Servidor
+cd "C:\Users\Mary Urrea\Desktop\ultra-low-latency-system"
+bin\server.exe
+
+# Terminal 2 - Cliente
+cd "C:\Users\Mary Urrea\Desktop\ultra-low-latency-system"
+bin\client.exe --requests 10
+```
+
+### 📋 Comandos Avanzados
+
+```bash
+# Servidor con configuración personalizada
+bin\server.exe --host 0.0.0.0 --port 8080
 
 # Test con 10,000 requests y 4 conexiones concurrentes
-./client.exe --requests 10000 --concurrent 4
+bin\client.exe --requests 10000 --concurrent 4
 
 # Test continuo por 30 segundos a 1000 req/sec
-./client.exe --duration 30 --rate 1000
+bin\client.exe --duration 30 --rate 1000
 
 # Test personalizado
-./client.exe --request "ping" --response "pong" --requests 5000
+bin\client.exe --request "ping" --response "pong" --requests 5000
 
 # Guardar resultados en CSV
-./client.exe --requests 10000 --output results.csv
+bin\client.exe --requests 10000 --output results.csv
 ```
-
-### 3. Test Integrado Completo
-
-```bash
-# Ejecuta todos los tests automáticamente
-./latency_test.exe
-```
-
-Este test ejecuta:
-- Test de request único
-- Test ping-pong
-- Test batch (1000 requests)
-- Test concurrente (4 threads, 1000 requests)
-- Test continuo (10 segundos, 1000 req/sec)
 
 ## 📊 Resultados Esperados
 
@@ -191,25 +256,6 @@ config.recv_buffer_size = 64 * 1024;
 config.timeout_ms = 1000;
 ```
 
-## 📈 Análisis de Performance
-
-### Métricas Clave
-
-1. **Latencia Mínima**: Tiempo de respuesta más rápido
-2. **Latencia Promedio**: Latencia media de todas las requests
-3. **Percentiles**: P50, P95, P99, P99.9 para análisis de distribución
-4. **Throughput**: Requests por segundo procesadas
-5. **Success Rate**: Porcentaje de requests exitosas
-
-### Interpretación de Resultados
-
-- **< 100 μs**: Excelente performance
-- **100-500 μs**: Buena performance
-- **500-1000 μs**: Performance aceptable
-- **> 1000 μs**: Necesita optimización
-
-## 🐛 Troubleshooting
-
 ### Problemas Comunes
 
 1. **Error de Conexión**
@@ -255,9 +301,9 @@ cmake --build . --config Debug
 
 ## 📚 Referencias Técnicas
 
-- [Windows IOCP Documentation](https://docs.microsoft.com/en-us/windows/win32/fileio/i-o-completion-ports)
+- [Windows Sockets Programming](https://docs.microsoft.com/en-us/windows/win32/winsock/)
 - [High-Performance Networking](https://docs.microsoft.com/en-us/windows/win32/winsock/high-performance-winsock-applications)
-- [QueryPerformanceCounter](https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter)
+- [High-Resolution Timer](https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps)
 
 ## 🤝 Contribuciones
 
@@ -269,18 +315,19 @@ Las contribuciones son bienvenidas. Por favor:
 4. Push a la rama
 5. Abrir un Pull Request
 
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
-## 🏆 Logros
-
-Este sistema ha sido diseñado para demostrar:
-
-- ✅ Arquitectura de software optimizada para ultra-baja latencia
-- ✅ Implementación eficiente usando tecnologías nativas de Windows
-- ✅ Medición precisa de latencia en nanosegundos
-- ✅ Escalabilidad con múltiples conexiones concurrentes
-- ✅ Análisis estadístico completo de performance
 
 **¡El objetivo es lograr latencias consistentemente menores a 1 milisegundo!** 
+
+Archivos .bat
+
+compile.bat:
+✅ Compilación optimizada para máxima performance
+✅ Verificación de dependencias (MinGW)
+✅ Manejo de errores con mensajes claros
+✅ Estructura organizada con directorio bin/
+
+test.bat:
+✅ Testing automático del sistema completo
+✅ Verificación de componentes críticos
+✅ Debugging visual con ventana del servidor
+✅ Tests múltiples para validación completa
