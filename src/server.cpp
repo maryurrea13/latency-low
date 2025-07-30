@@ -5,6 +5,7 @@
 #include <vector>
 #include <atomic>
 #include <chrono>
+#include <iomanip>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -14,9 +15,12 @@ private:
     std::atomic<bool> running_;
     std::vector<std::thread> worker_threads_;
     int port_;
+    std::atomic<uint64_t> total_requests_;
+    std::atomic<uint64_t> total_processing_time_ns_;
 
 public:
-    SimpleServer(int port = 8080) : listen_socket_(INVALID_SOCKET), running_(false), port_(port) {}
+    SimpleServer(int port = 8080) : listen_socket_(INVALID_SOCKET), running_(false), port_(port), 
+                                   total_requests_(0), total_processing_time_ns_(0) {}
 
     ~SimpleServer() {
         Stop();
@@ -135,8 +139,24 @@ private:
             buffer[received] = '\0';
             std::string request(buffer);
 
+            // Start timing the processing
+            auto processing_start = std::chrono::high_resolution_clock::now();
+
             // Generate response
             std::string response = "respuesta";
+
+            // End timing the processing
+            auto processing_end = std::chrono::high_resolution_clock::now();
+            auto processing_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(processing_end - processing_start);
+            uint64_t processing_time_ns = processing_duration.count();
+
+            // Update statistics
+            total_requests_++;
+            total_processing_time_ns_ += processing_time_ns;
+
+            // Print processing time for each request
+            std::cout << "Request processed in " << std::fixed << std::setprecision(3) 
+                      << (processing_time_ns / 1000.0) << " μs" << std::endl;
 
             // Send response
             int sent = send(client_socket, response.c_str(), response.length(), 0);
@@ -146,6 +166,18 @@ private:
         }
 
         closesocket(client_socket);
+    }
+
+    void PrintStatistics() {
+        if (total_requests_ > 0) {
+            uint64_t avg_processing_time = total_processing_time_ns_ / total_requests_;
+            std::cout << "\n=== Server Statistics ===" << std::endl;
+            std::cout << "Total requests processed: " << total_requests_ << std::endl;
+            std::cout << "Average processing time: " << std::fixed << std::setprecision(3) 
+                      << (avg_processing_time / 1000.0) << " μs" << std::endl;
+            std::cout << "Total processing time: " << std::fixed << std::setprecision(3) 
+                      << (total_processing_time_ns_ / 1000000.0) << " ms" << std::endl;
+        }
     }
 };
 
@@ -160,6 +192,7 @@ int main() {
     std::cout << "Server running. Press Enter to stop..." << std::endl;
     std::cin.get();
 
+    server.PrintStatistics();
     server.Stop();
     return 0;
 } 
